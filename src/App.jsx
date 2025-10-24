@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Staff from "./pages/Staff";
 import Patents from "./pages/Patents";
 import LayoutWithSidebar from "./layouts/LayouWithSidebar";
+import MapDashboard from "./pages/MapDashboard";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
 
         {/* Uncomment and organize routes under layout if needed */}
         <Route element={<LayoutWithSidebar />}>
+          <Route path="/" element={<MapDashboard />} />
           <Route path="/publications" element={<Dashboard />} />
           <Route path="/staff" element={<Staff />} />
           <Route path="/patents" element={<Patents />} />
