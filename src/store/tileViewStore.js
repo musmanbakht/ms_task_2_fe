@@ -6,6 +6,7 @@ export const useLayerStore = create((set) => ({
     zaf_adm1: true, // admin boundary lines
     zaf_water_areas_dcw: true, // water bodies
     zaf_water_lines_dcw: true, // rivers/streams
+    zaf_osm_buildings: true, // rivers/streams
   },
 
   // Toggle any layer on/off
@@ -33,6 +34,7 @@ export const useLayerStore = create((set) => ({
         zaf_adm1: true,
         zaf_water_areas_dcw: true,
         zaf_water_lines_dcw: true,
+        zaf_osm_buildings: true,
       },
     }),
 }));

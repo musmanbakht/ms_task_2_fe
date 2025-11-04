@@ -8,6 +8,7 @@ import Staff from "./pages/Staff";
 import Patents from "./pages/Patents";
 import LayoutWithSidebar from "./layouts/LayouWithSidebar";
 import MapDashboard from "./pages/MapDashboard";
+import EarthEngineConnect from "./pages/EarthEngineConnect";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/publications" element={<Dashboard />} />
           <Route path="/staff" element={<Staff />} />
           <Route path="/patents" element={<Patents />} />
+          <Route path="/earth-engine-auth" element={<EarthEngineConnect />} />
         </Route>
       </Routes>
     </Router>
@@ -28,44 +30,3 @@ function App() {
 }
 
 export default App;
-
-// import { useState } from "react";
-// import reactLogo from "./assets/react.svg";
-// import viteLogo from "/vite.svg";
-// import "./App.css";
-// import DeleteModal from "./components/Modals/DeleteModal";
-// import Sidebar from "./components/Sidebar/Sidebar";
-// import Navbar from "./components/Navbar/Navbar";
-// import { Route, Router, Routes } from "react-router-dom";
-// import Dashboard from "./pages/Dashboard";
-// import Staff from "./pages/Staff";
-// import Patents from "./pages/Patents";
-// import LayoutWithSidebar from "./layouts/LayouWithSidebar";
-
-// function App() {
-//   return (
-//     <Router>
-//       <div>
-//         {/* Main content */}
-//         <div>
-//           <Routes>
-//             {/* <Route path="/about" element={<About />} />
-//             <Route path="/" element={<Home />} />
-//             <Route path="/settings" element={<Home />} /> */}
-//             {/* <Route path="/dashboard" element={<Dashboard />} />
-//             <Route path="/staff" element={<Staff />} />
-//             <Route path="/patents" element={<Patents />} /> */}
-//             {/* Pages with sidebar */}
-//             {/* <Route element={<LayoutWithSidebar />}> */}
-//               <Route path="/dashboard" element={<Dashboard />} />
-//               {/* <Route path="/staff" element={<Staff />} />
-//               <Route path="/patents" element={<Patents />} /> */}
-//             {/* </Route> */}
-//           </Routes>
-//         </div>
-//       </div>
-//     </Router>
-//   );
-// }
-
-// export default App;
