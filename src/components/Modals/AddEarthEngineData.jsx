@@ -13,7 +13,7 @@ export default function AddEarthEngineData({ isOpen, onClose, sessionId }) {
     // Example parameters - adjust based on your needs
     const params = {
       product: "modis",
-      province: "Punjab",
+      province: "Gauteng",
       input_date: "2009-12-31",
       palette: null,
       geometry: null,

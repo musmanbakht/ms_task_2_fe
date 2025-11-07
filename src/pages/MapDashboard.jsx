@@ -9,12 +9,14 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { useLayerStore } from "../store/tileViewStore";
 import { FaCaretRight } from "react-icons/fa";
 import useEarthEngineStore from "../store/earthEngineStore";
+import ZafAdm1 from "../components/Layers/ZafAdm1";
 
 const BASEMAPS = {
   osm: {
     name: "OpenStreetMap",
     style: {
       version: 8,
+
       sources: {
         osm: {
           type: "raster",
@@ -38,6 +40,8 @@ const BASEMAPS = {
     name: "Satellite",
     style: {
       version: 8,
+      glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf", // Add this!
+
       sources: {
         satellite: {
           type: "raster",
@@ -154,7 +158,7 @@ export default function MapDashboard() {
       >
         {mapLoaded && (
           <>
-            {layerVisibility.zaf_adm1 && (
+            {/* {layerVisibility.zaf_adm1 && (
               <>
                 <Source
                   id="zaf-adm1-source"
@@ -172,7 +176,8 @@ export default function MapDashboard() {
                   }}
                 />
               </>
-            )}
+            )} */}
+            {layerVisibility.zaf_adm1 && <ZafAdm1 TILE_SERVER={TILE_SERVER} />}
             {layerVisibility.zaf_water_areas_dcw && (
               <>
                 <Source

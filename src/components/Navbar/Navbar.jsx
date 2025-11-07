@@ -13,12 +13,12 @@ const Navbar = () => {
           >
             {/* <img src="https://flowbite.com/docs/images/logo.svg" className="h-8" alt="Flowbite Logo" /> */}
             <img
-              src="/wmi_digimine_header.jpg"
+              src="/digimine_logo_white_bg.jpg"
               className="h-12"
               alt="WITS Logo"
             />
             <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-gray-800">
-              SDSS portal
+              SDSS Portal
             </span>
           </a>
           <button

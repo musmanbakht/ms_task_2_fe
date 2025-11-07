@@ -7,6 +7,8 @@ import {
   FaBuilding,
   FaPlus,
 } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
+
 import { MdWaves } from "react-icons/md";
 import AddEarthEngineData from "../Modals/AddEarthEngineData";
 import useEarthEngineStore from "../../store/earthEngineStore";
@@ -16,8 +18,13 @@ const API_BASE_URL = "http://localhost:8000";
 const EarthEngineLayerSwitch = () => {
   const { layers, toggleLayer, resetLayers } = useLayerStore();
 
-  const { eeLayers, activeLayers, toggleLayerVisibility, removeLayer } =
-    useEarthEngineStore();
+  const {
+    eeLayers,
+    activeLayers,
+    toggleLayerVisibility,
+    removeLayer,
+    clearAllLayers,
+  } = useEarthEngineStore();
 
   // Earth Engine auth state
   const [sessionId, setSessionId] = useState(null);
@@ -96,43 +103,18 @@ const EarthEngineLayerSwitch = () => {
     setSessionId(null);
   };
 
-  const layerConfig = [
-    {
-      name: "zaf_adm1",
-      label: "Admin Boundaries",
-      icon: <FaMap className="w-4 h-4" />,
-      description: "Provincial boundary lines",
-    },
-    {
-      name: "zaf_water_areas_dcw",
-      label: "Water Bodies",
-      icon: <FaWater className="w-4 h-4" />,
-      description: "Lakes and reservoirs",
-    },
-    {
-      name: "zaf_water_lines_dcw",
-      label: "Rivers & Streams",
-      icon: <MdWaves className="w-4 h-4" />,
-      description: "Water courses",
-    },
-    {
-      name: "zaf_osm_buildings",
-      label: "Buildings",
-      icon: <FaBuilding className="w-4 h-4" />,
-      description: "OSM buildings",
-    },
-  ];
-
   return (
     <>
       <div className="bg-white rounded-lg shadow-lg p-4 w-80">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <FaLayerGroup className="w-5 h-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-800">Map Layers</h3>
+            <h3 className="text-lg font-semibold text-gray-800">
+              Google Earth Engine
+            </h3>
           </div>
           <button
-            onClick={resetLayers}
+            onClick={clearAllLayers}
             className="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors"
           >
             Reset
@@ -143,9 +125,10 @@ const EarthEngineLayerSwitch = () => {
         <div className="mb-4 p-3 bg-gray-50 rounded-lg">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">
-                Earth Engine
-              </span>
+              {/* <span className="text-sm font-medium text-gray-700">
+                <FcGoogle />
+              </span> */}
+              <FcGoogle />
               <div
                 className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                   isAuthenticated
