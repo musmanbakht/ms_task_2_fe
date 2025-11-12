@@ -12,12 +12,8 @@ const Navbar = () => {
             className="flex items-center space-x-2 rtl:space-x-reverse"
           >
             {/* <img src="https://flowbite.com/docs/images/logo.svg" className="h-8" alt="Flowbite Logo" /> */}
-            <img
-              src="/digimine_logo_white_bg.jpg"
-              className="h-12"
-              alt="WITS Logo"
-            />
-            <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-gray-800">
+            <img src="/digimine_logo.jpg" className="h-12" alt="WITS Logo" />
+            <span className="ml-8 self-center text-2xl font-semibold whitespace-nowrap dark:text-gray-800">
               SDSS Portal
             </span>
           </a>

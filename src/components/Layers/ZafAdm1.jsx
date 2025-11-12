@@ -3,6 +3,31 @@ import React from "react";
 import { Source, Layer } from "react-map-gl/maplibre";
 
 export default function ZafAdm1({ TILE_SERVER }) {
+  const PROVINCE_COLOR_MATCH = [
+    "match",
+    ["get", "name_1"],
+    "Eastern Cape",
+    "#f28cb1",
+    "Free State",
+    "#f1c40f",
+    "Gauteng",
+    "#2ecc71",
+    "KwaZulu-Natal",
+    "#3498db",
+    "Limpopo",
+    "#9b59b6",
+    "Mpumalanga",
+    "#e67e22",
+    "North West",
+    "#1abc9c",
+    "Northern Cape",
+    "#e74c3c",
+    "Western Cape (isolated islands)",
+    "#95a5a6",
+    "Western Cape",
+    "#000000",
+    "#cccccc",
+  ];
   return (
     <>
       <Source
@@ -18,31 +43,7 @@ export default function ZafAdm1({ TILE_SERVER }) {
         source="zaf-adm1-source"
         {...{ "source-layer": "zaf_adm1" }}
         paint={{
-          "line-color": [
-            "match",
-            ["get", "name_1"],
-            "Eastern Cape",
-            "#f28cb1",
-            "Free State",
-            "#f1c40f",
-            "Gauteng",
-            "#2ecc71",
-            "KwaZulu-Natal",
-            "#3498db",
-            "Limpopo",
-            "#9b59b6",
-            "Mpumalanga",
-            "#e67e22",
-            "North West",
-            "#1abc9c",
-            "Northern Cape",
-            "#e74c3c",
-            "Western Cape (isolated islands)",
-            "#95a5a6",
-            "Western Cape",
-            "#000000",
-            "#cccccc", // default
-          ],
+          "line-color": PROVINCE_COLOR_MATCH,
           "line-width": 4,
         }}
       />

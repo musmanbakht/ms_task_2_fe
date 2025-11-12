@@ -10,6 +10,9 @@ import { useLayerStore } from "../store/tileViewStore";
 import { FaCaretRight } from "react-icons/fa";
 import useEarthEngineStore from "../store/earthEngineStore";
 import ZafAdm1 from "../components/Layers/ZafAdm1";
+import ZafWaterLines from "../components/Layers/ZafWaterLines";
+import ZafWaterAreas from "../components/Layers/ZafWaterAreas";
+import ZafBuildings from "../components/Layers/ZafBuildings";
 
 const BASEMAPS = {
   osm: {
@@ -179,73 +182,18 @@ export default function MapDashboard() {
             )} */}
             {layerVisibility.zaf_adm1 && <ZafAdm1 TILE_SERVER={TILE_SERVER} />}
             {layerVisibility.zaf_water_areas_dcw && (
-              <>
-                <Source
-                  id="zaf-water-area-source"
-                  type="vector"
-                  tiles={[
-                    `${TILE_SERVER}/tiles/zaf_water_areas_dcw/{z}/{x}/{y}.mvt`,
-                  ]}
-                />
-                <Layer
-                  id="zaf-water-areas"
-                  type="fill"
-                  source="zaf-water-area-source"
-                  {...{ "source-layer": "zaf_water_areas_dcw" }}
-                  paint={{
-                    "fill-color": "#1647f7",
-                    "fill-opacity": 0.6,
-                  }}
-                />
-              </>
+              <ZafWaterAreas TILE_SERVER={TILE_SERVER} />
             )}
 
             {layerVisibility.zaf_water_lines_dcw && (
-              <>
-                <Source
-                  id="zaf-water-line-source"
-                  type="vector"
-                  tiles={[
-                    `${TILE_SERVER}/tiles/zaf_water_lines_dcw/{z}/{x}/{y}.mvt`,
-                  ]}
-                />
-                <Layer
-                  id="zaf-water-line"
-                  type="line"
-                  source="zaf-water-line-source"
-                  {...{ "source-layer": "zaf_water_lines_dcw" }}
-                  paint={{
-                    "line-color": "#1647f7",
-                    "line-width": 1,
-                  }}
-                />
-              </>
+              <ZafWaterLines TILE_SERVER={TILE_SERVER} />
             )}
           </>
         )}
 
         {layerVisibility.zaf_osm_buildings &&
           viewState.zoom >= BUILDING_ZOOM_THRESHOLD && (
-            <>
-              <Source
-                id="zaf-osm-buildings-source"
-                type="vector"
-                tiles={[
-                  `${TILE_SERVER}/tiles/zaf_osm_buildings/{z}/{x}/{y}.mvt`,
-                ]}
-                maxzoom={16}
-              />
-              <Layer
-                id="zaf-osm-buildings-fill"
-                type="fill"
-                source="zaf-osm-buildings-source"
-                {...{ "source-layer": "zaf_osm_buildings" }}
-                paint={{
-                  "fill-color": "#ff9900",
-                  "fill-opacity": 0.6,
-                }}
-              />
-            </>
+          <ZafBuildings TILE_SERVER={TILE_SERVER} />
           )}
         {/* 💬 Message overlay */}
         {layerVisibility.zaf_osm_buildings &&
