@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { EARTH_ENGINE_BASE_URL, fetchClassificationMap } from "../API/earthEngine.js";
 
 const useEarthEngineStore = create((set, get) => ({
   // Store all EE layers
@@ -13,10 +14,17 @@ const useEarthEngineStore = create((set, get) => ({
   // Error state
   error: null,
 
+  extentRequest: null,
+  requestLayerExtent: (layerId) => {
+    const layer = get().getLayer(layerId);
+    if (layer?.boundingBox) set({ extentRequest: { layerId, bounds: layer.boundingBox } });
+  },
+  clearExtentRequest: () => set({ extentRequest: null }),
+
   // Add a new EE layer
   addLayer: (layerData) => {
     const newLayer = {
-      id: `ee-layer-${Date.now()}`,
+      id: `ee-layer-${crypto.randomUUID()}`,
       ...layerData,
       addedAt: new Date().toISOString(),
       visible: true,
@@ -90,7 +98,7 @@ const useEarthEngineStore = create((set, get) => ({
 
   // Fetch and add layer from API
   fetchAndAddLayer: async (params, sessionId) => {
-    const API_BASE_URL = "http://localhost:8000";
+    const API_BASE_URL = EARTH_ENGINE_BASE_URL;
 
     set({ loading: true, error: null });
 
@@ -136,6 +144,27 @@ const useEarthEngineStore = create((set, get) => ({
     } catch (error) {
       set({ loading: false, error: error.message });
       return { success: false, error: error.message };
+    }
+  },
+
+  fetchAndAddClassification: async (params, sessionId) => {
+    set({ loading: true, error: null });
+    try {
+      const data = await fetchClassificationMap(params, sessionId);
+      const mineId = params.mineId?.trim() || null;
+      const layerData = {
+        ...data,
+        type: "classification",
+        name: `Classification - ${data.requestedDate || params.date} - ${mineId || "All mines"}`,
+        requestedDate: data.requestedDate || params.date,
+        mineId,
+      };
+      const layerId = get().addLayer(layerData);
+      set({ loading: false });
+      return { success: true, layerId, data: layerData };
+    } catch (error) {
+      set({ loading: false, error: error.message });
+      return { success: false, error: error.message, status: error.status };
     }
   },
 

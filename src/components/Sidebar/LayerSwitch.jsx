@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 // import { useLayerStore } from './useLayerStore';
 import { useLayerStore } from "../../store/tileViewStore";
-import { FaLayerGroup, FaMap, FaWater, FaBuilding } from "react-icons/fa";
+import { FaLayerGroup, FaMap, FaWater, FaBuilding, FaCircle } from "react-icons/fa";
 import { MdWaves } from "react-icons/md";
 import { FaChevronDown } from "react-icons/fa";
 import VectorLegend from "../Legends/VectorLegend";
@@ -10,6 +10,26 @@ const LayerSwitch = () => {
   const { layers, toggleLayer, resetLayers } = useLayerStore();
 
   const layerConfig = [
+    {
+      name: "mines_aoi",
+      label: "Mines",
+      icon: <FaCircle className="w-3 h-3 text-red-600" />,
+      description: "Mine locations",
+      legend: {
+        swatch: "circle",
+        items: [{ label: "Mine location", color: "#ff0000" }],
+      },
+    },
+    {
+      name: "zaf_adm0",
+      label: "Country Boundary",
+      icon: <FaMap className="w-4 h-4" />,
+      description: "South Africa country boundary",
+      legend: {
+        swatch: "line",
+        items: [{ label: "Country boundary", color: "#ffffff" }],
+      },
+    },
     {
       name: "zaf_adm1",
       label: "Admin Boundaries",
@@ -78,17 +98,24 @@ const LayerSwitch = () => {
   ];
 
 
+  const [isOpen, setIsOpen] = useState(false);
   const [expanded, setExpanded] = useState({});
   const toggleExpanded = (name) =>
     setExpanded((prev) => ({ ...prev, [name]: !prev[name] }));
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-4 w-80">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+      <button type="button" onClick={() => setIsOpen((open) => !open)}
+        aria-expanded={isOpen} aria-controls="map-layers-options"
+        className="flex w-full items-center justify-between text-left">
+        <span className="flex items-center gap-2">
           <FaLayerGroup className="w-5 h-5 text-blue-600" />
-          <h3 className="text-lg font-semibold text-gray-800">Map Layers</h3>
-        </div>
+          <span className="text-lg font-semibold text-gray-800">Map Layers</span>
+        </span>
+        <FaChevronDown className={`text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+      {isOpen && <div id="map-layers-options" className="mt-4">
+      <div className="flex justify-end mb-2">
         <button
           onClick={resetLayers}
           className="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors"
@@ -160,6 +187,7 @@ const LayerSwitch = () => {
           layers visible
         </p>
       </div>
+      </div>}
     </div>
   );
 };

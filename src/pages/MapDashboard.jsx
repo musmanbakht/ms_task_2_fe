@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import Map, {
   NavigationControl,
   Layer,
@@ -13,6 +13,8 @@ import ZafAdm1 from "../components/Layers/ZafAdm1";
 import ZafWaterLines from "../components/Layers/ZafWaterLines";
 import ZafWaterAreas from "../components/Layers/ZafWaterAreas";
 import ZafBuildings from "../components/Layers/ZafBuildings";
+import MinesAoi from "../components/Layers/MinesAoi";
+import ZafAdm0 from "../components/Layers/ZafAdm0";
 
 const BASEMAPS = {
   osm: {
@@ -96,7 +98,6 @@ const BASEMAPS = {
 export default function MapDashboard() {
   const mapRef = useRef(null);
   const { layers: layerVisibility } = useLayerStore();
-  const [selectedBaseLayer, setselectedBaseLayer] = useState([]);
   const [viewState, setViewState] = useState({
     longitude: 24,
     latitude: -30,
@@ -109,8 +110,18 @@ export default function MapDashboard() {
   const [selectedFeatures, setSelectedFeatures] = useState([]);
   const [featureIndex, setFeatureIndex] = useState(0);
   const BUILDING_ZOOM_THRESHOLD = 13;
-  const { getVisibleLayers } = useEarthEngineStore();
+  const { getVisibleLayers, extentRequest, clearExtentRequest, getLayer } = useEarthEngineStore();
   const visibleLayers = getVisibleLayers();
+
+  useEffect(() => {
+    if (!mapLoaded || !extentRequest) return;
+    const bounds = extentRequest.bounds;
+    if (getLayer(extentRequest.layerId) && Array.isArray(bounds) && bounds.length === 4 &&
+        bounds.every(Number.isFinite) && bounds[0] < bounds[2] && bounds[1] < bounds[3]) {
+      mapRef.current?.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]], { padding: 40, maxZoom: 14, duration: 800 });
+    }
+    clearExtentRequest();
+  }, [mapLoaded, extentRequest, clearExtentRequest, getLayer]);
 
   // const handleParcelLayerToggle = useCallback((layerKey) => {
   //   selectedBaseLayer((prev) => {
@@ -152,7 +163,7 @@ export default function MapDashboard() {
       <Map
         ref={mapRef} // 👈 ADD THIS LINE
         {...viewState}
-        onLoad={(e) => setMapLoaded(true)}
+        onLoad={() => setMapLoaded(true)}
         onMove={(evt) => setViewState(evt.viewState)}
         mapStyle={BASEMAPS[basemap].style}
         style={{ width: "100%", height: "100%" }}
@@ -278,6 +289,8 @@ export default function MapDashboard() {
             />
           </Source>
         ))}
+        {mapLoaded && layerVisibility.zaf_adm0 && <ZafAdm0 TILE_SERVER={TILE_SERVER} />}
+        {mapLoaded && layerVisibility.mines_aoi && <MinesAoi TILE_SERVER={TILE_SERVER} />}
         <NavigationControl position="top-right" />
       </Map>
 

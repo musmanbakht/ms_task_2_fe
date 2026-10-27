@@ -1,7 +1,6 @@
 import React from "react";
 import { FaChevronLeft, FaStamp } from "react-icons/fa6";
 import { FaBars } from "react-icons/fa";
-import { useState } from "react";
 import { useSidebarStore } from "../../store/sidebarStore";
 import SidebarContentSwitch from "./SidebarContentSwitch";
 import LayerSwitch from "./LayerSwitch";
@@ -16,9 +15,9 @@ const Sidebar = () => {
   let content;
   if (sidebarContent === "layers")
     content = (
-      <div className="">
-        <LayerSwitch />
+      <div className="flex flex-col gap-4">
         <EarthEngineLayerSwitch />
+        <LayerSwitch />
       </div>
     );
   else if (sidebarContent === "legend") content = <Legends />;

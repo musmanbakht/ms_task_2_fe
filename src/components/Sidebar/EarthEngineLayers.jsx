@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { useLayerStore } from "../../store/tileViewStore";
+import React, { useState, useEffect, useRef } from "react";
+import ClassificationDetails from "./ClassificationDetails";
+import { EARTH_ENGINE_BASE_URL as API_BASE_URL } from "../../API/earthEngine";
 import {
   FaLayerGroup,
   FaMap,
   FaWater,
   FaBuilding,
   FaPlus,
+  FaInfoCircle,
 } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 
@@ -13,10 +15,10 @@ import { MdWaves } from "react-icons/md";
 import AddEarthEngineData from "../Modals/AddEarthEngineData";
 import useEarthEngineStore from "../../store/earthEngineStore";
 
-const API_BASE_URL = "http://localhost:8000";
+
 
 const EarthEngineLayerSwitch = () => {
-  const { layers, toggleLayer, resetLayers } = useLayerStore();
+
 
   const {
     eeLayers,
@@ -24,6 +26,8 @@ const EarthEngineLayerSwitch = () => {
     toggleLayerVisibility,
     removeLayer,
     clearAllLayers,
+    setError: setLayerError,
+    requestLayerExtent,
   } = useEarthEngineStore();
 
   // Earth Engine auth state
@@ -32,6 +36,25 @@ const EarthEngineLayerSwitch = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showAddDataModal, setShowAddDataModal] = useState(false);
+  const [showSessionInfo, setShowSessionInfo] = useState(false);
+  const sessionInfoRef = useRef(null);
+
+  useEffect(() => {
+    if (!showSessionInfo) return;
+    const dismiss = (event) => {
+      if (event.type === "keydown") {
+        if (event.key === "Escape") setShowSessionInfo(false);
+      } else if (!sessionInfoRef.current?.contains(event.target)) {
+        setShowSessionInfo(false);
+      }
+    };
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("keydown", dismiss);
+    return () => {
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("keydown", dismiss);
+    };
+  }, [showSessionInfo]);
   // Add this useEffect to handle the callback from Google OAuth
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -74,7 +97,7 @@ const EarthEngineLayerSwitch = () => {
       } else {
         localStorage.removeItem("ee_session_id");
       }
-    } catch (err) {
+    } catch {
       setError("Auth status check failed");
       localStorage.removeItem("ee_session_id");
     }
@@ -90,7 +113,7 @@ const EarthEngineLayerSwitch = () => {
       const data = await response.json();
       setSessionId(data.session_id);
       window.location.href = data.auth_url;
-    } catch (err) {
+    } catch {
       setError("Failed to initialize authentication");
     } finally {
       setLoading(false);
@@ -101,6 +124,7 @@ const EarthEngineLayerSwitch = () => {
     localStorage.removeItem("ee_session_id");
     setIsAuthenticated(false);
     setSessionId(null);
+    setShowSessionInfo(false);
   };
 
   return (
@@ -123,7 +147,7 @@ const EarthEngineLayerSwitch = () => {
 
         {/* Earth Engine Status */}
         <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {/* <span className="text-sm font-medium text-gray-700">
                 <FcGoogle />
@@ -138,6 +162,22 @@ const EarthEngineLayerSwitch = () => {
               >
                 {isAuthenticated ? "🌍 Connected" : "⚪ Disconnected"}
               </div>
+              {isAuthenticated && sessionId && (
+                <div ref={sessionInfoRef} className="relative flex items-center">
+                  <button type="button" aria-label="Earth Engine session information"
+                    aria-expanded={showSessionInfo} aria-controls="ee-session-info"
+                    onClick={() => setShowSessionInfo((show) => !show)}
+                    className="text-gray-500 hover:text-blue-600 focus-visible:outline-2 focus-visible:outline-blue-600 rounded-full">
+                    <FaInfoCircle className="w-4 h-4" />
+                  </button>
+                  {showSessionInfo && (
+                    <div id="ee-session-info" className="absolute right-0 top-full mt-2 z-50 w-60 rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700">
+                      <p className="font-semibold mb-1">Earth Engine session</p>
+                      <p className="break-all select-text">Session: {sessionId}</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             {isAuthenticated ? (
               <button
@@ -157,17 +197,12 @@ const EarthEngineLayerSwitch = () => {
             )}
           </div>
           {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
-          {isAuthenticated && sessionId && (
-            <p className="text-xs text-gray-500 mt-1">
-              Session: {sessionId.substring(0, 8)}...
-            </p>
-          )}
         </div>
 
         {/* Add Data Button */}
         {isAuthenticated && (
           <button
-            onClick={() => setShowAddDataModal(true)}
+            onClick={() => { setLayerError(null); setShowAddDataModal(true); }}
             className="w-full mb-4 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
           >
             <FaPlus className="w-3 h-3" />
@@ -193,7 +228,7 @@ const EarthEngineLayerSwitch = () => {
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <span className="font-medium text-gray-800 text-sm">
-                      {layer.product} - {layer.province}
+                      {layer.name || `${layer.product} - ${layer.province}`}
                     </span>
                     <button
                       onClick={() => removeLayer(layer.id)}
@@ -203,8 +238,11 @@ const EarthEngineLayerSwitch = () => {
                     </button>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Date: {layer.inputDate}
+                    Date: {layer.requestedDate || layer.inputDate}
                   </p>
+                  {layer.type === "classification" && (
+                    <ClassificationDetails layer={layer} visible={activeLayers[layer.id]} onZoom={() => requestLayerExtent(layer.id)} />
+                  )}
                 </div>
               </div>
             ))}
@@ -218,6 +256,11 @@ const EarthEngineLayerSwitch = () => {
         isOpen={showAddDataModal}
         onClose={() => setShowAddDataModal(false)}
         sessionId={sessionId}
+        onSessionExpired={(message) => {
+          handleDisconnect();
+          setShowAddDataModal(false);
+          setError(message);
+        }}
       />
     </>
   );

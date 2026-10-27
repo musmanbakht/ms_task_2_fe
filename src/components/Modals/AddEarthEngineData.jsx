@@ -1,15 +1,41 @@
 import React, { useState } from "react";
+import { validateClassificationDate } from "../../API/earthEngine";
 import { FaSearch } from "react-icons/fa";
 import useEarthEngineStore from "../../store/earthEngineStore";
 
-export default function AddEarthEngineData({ isOpen, onClose, sessionId }) {
+export default function AddEarthEngineData({ isOpen, onClose, sessionId, onSessionExpired }) {
   const [searchQuery, setSearchQuery] = useState("");
   //   const [loading, setLoading] = useState(false);
 
-  const { fetchAndAddLayer, loading } = useEarthEngineStore();
+  const [mode, setMode] = useState("imagery");
+  const [date, setDate] = useState("");
+  const [mineId, setMineId] = useState("");
+  const [zoomToLayer, setZoomToLayer] = useState(true);
+  const { fetchAndAddLayer, fetchAndAddClassification, requestLayerExtent, loading, error, setError } = useEarthEngineStore();
+
+  const handleClassify = async (event) => {
+    event.preventDefault();
+    if (loading) return;
+    if (!sessionId || localStorage.getItem("ee_session_id") !== sessionId) {
+      onSessionExpired("Please connect to Earth Engine again.");
+      return;
+    }
+    const validationError = validateClassificationDate(date);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    const result = await fetchAndAddClassification({ date, mineId }, sessionId);
+    if (result.success) {
+      if (zoomToLayer) requestLayerExtent(result.layerId);
+      onClose();
+    } else if (result.status === 401) {
+      onSessionExpired(result.error);
+    }
+  };
   if (!isOpen) return null;
 
-  const handleAddDataset = async (datasetId) => {
+  const handleAddDataset = async () => {
     // Example parameters - adjust based on your needs
     const params = {
       product: "modis",
@@ -91,7 +117,42 @@ export default function AddEarthEngineData({ isOpen, onClose, sessionId }) {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          <div className="space-y-4">
+          <div className="flex gap-2 mb-4">
+            {[['imagery', 'Simple imagery'], ['classification', 'Supervised classification']].map(([value, label]) => (
+              <button key={value} type="button" disabled={loading} aria-pressed={mode === value}
+                onClick={() => { setMode(value); setError(null); }}
+                className={`px-3 py-2 rounded-lg text-sm ${mode === value ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+          {error && <p role="alert" className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</p>}
+          {mode === "classification" ? (
+            <form onSubmit={handleClassify} className="space-y-4">
+              <p id="classification-date-help" className="text-sm text-gray-600">Choose the requested classification date.</p>
+              <label className="block text-sm font-medium text-gray-700">
+                Requested date
+                <input type="date" required value={date}
+                  aria-describedby="classification-date-help" disabled={loading}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="mt-1 w-full p-3 border border-gray-300 rounded-lg" />
+              </label>
+              <label className="block text-sm font-medium text-gray-700">
+                Mine ID (optional)
+                <input type="text" value={mineId} disabled={loading} aria-describedby="mine-id-help"
+                  onChange={(e) => setMineId(e.target.value)}
+                  className="mt-1 w-full p-3 border border-gray-300 rounded-lg" />
+              </label>
+              <p id="mine-id-help" className="text-sm text-gray-600">Leave Mine ID blank to classify all mines.</p>
+              <label className="flex gap-2 text-sm text-gray-700">
+                <input type="checkbox" checked={zoomToLayer} disabled={loading} onChange={(e) => setZoomToLayer(e.target.checked)} />
+                Zoom to classification when added
+              </label>
+              <button type="submit" disabled={loading} className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50">
+                {loading ? "Classifying..." : "Classify"}
+              </button>
+            </form>
+          ) : <div className="space-y-4">
             {/* Search Input */}
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -170,7 +231,7 @@ export default function AddEarthEngineData({ isOpen, onClose, sessionId }) {
                 ))
               )}
             </div>
-          </div>
+          </div>}
         </div>
 
         {/* Footer */}
