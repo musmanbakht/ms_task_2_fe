@@ -1,3 +1,4 @@
+import LoadingSkeleton from "../Common/LoadingSkeleton";
 import React, { useState } from "react";
 import { validateClassificationDate } from "../../API/earthEngine";
 import { FaSearch } from "react-icons/fa";
@@ -127,12 +128,13 @@ export default function AddEarthEngineData({ isOpen, onClose, sessionId, onSessi
             ))}
           </div>
           {error && <p role="alert" className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</p>}
+          {loading && <LoadingSkeleton text="Loading Earth Engine data…" className="h-16 mb-3" />}
           {mode === "classification" ? (
             <form onSubmit={handleClassify} className="space-y-4">
-              <p id="classification-date-help" className="text-sm text-gray-600">Choose the requested classification date.</p>
+              <p id="classification-date-help" className="text-sm text-gray-600">Choose a date from 1 January 2000 to 31 December 2023.</p>
               <label className="block text-sm font-medium text-gray-700">
                 Requested date
-                <input type="date" required value={date}
+                <input type="date" required min="2000-01-01" max="2023-12-31" value={date}
                   aria-describedby="classification-date-help" disabled={loading}
                   onChange={(e) => setDate(e.target.value)}
                   className="mt-1 w-full p-3 border border-gray-300 rounded-lg" />

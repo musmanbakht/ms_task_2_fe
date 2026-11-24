@@ -1,27 +1,19 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
+import { useSavedClassification } from "../../store/savedClassificationStore";
 import { FaChevronLeft, FaStamp } from "react-icons/fa6";
 import { FaBars } from "react-icons/fa";
 import { useSidebarStore } from "../../store/sidebarStore";
 import SidebarContentSwitch from "./SidebarContentSwitch";
 import LayerSwitch from "./LayerSwitch";
+import EarthEngineLayerSwitch from "./EarthEngineLayers";
 import Legends from "../Legends/Legends";
 import Analysis from "../Analysis/Analysis";
-import EarthEngineLayerSwitch from "./EarthEngineLayers";
 const Sidebar = () => {
-  // const [isOpen, setIsOpen] = useState(false);
-  const { isOpen, toggleSidebar, sidebarContent } = useSidebarStore();
-
-  // const toggleSidebar = () => setIsOpen(!isOpen);
-  let content;
-  if (sidebarContent === "layers")
-    content = (
-      <div className="flex flex-col gap-4">
-        <EarthEngineLayerSwitch />
-        <LayerSwitch />
-      </div>
-    );
-  else if (sidebarContent === "legend") content = <Legends />;
-  else if (sidebarContent === "analysis") content = <Analysis />;
+  const { isOpen, toggleSidebar } = useSidebarStore();
+  const { pathname } = useLocation();
+  const { year, selectYear } = useSavedClassification();
+  const content = <div className="flex flex-col gap-4">{pathname === "/supervised-classification" ? <section className="w-80 rounded-lg bg-white shadow-lg p-4"><h2 className="font-semibold mb-3">Select year</h2><div className="grid grid-cols-3 gap-2">{[2000,2005,2010,2015,2020,2023].map(y => <button key={y} type="button" aria-pressed={year === y} onClick={() => selectYear(y)} className={`rounded-full border px-3 py-2 ${year === y ? "bg-blue-600 text-white" : "bg-white text-gray-700"}`}>{y}</button>)}</div></section> : <EarthEngineLayerSwitch />}<LayerSwitch /></div>;
   return (
     <>
       <aside

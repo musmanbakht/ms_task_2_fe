@@ -1,3 +1,4 @@
+import { formatValue } from "../utils/formatNumbers";
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import Map, {
   NavigationControl,
@@ -14,6 +15,7 @@ import ZafWaterLines from "../components/Layers/ZafWaterLines";
 import ZafWaterAreas from "../components/Layers/ZafWaterAreas";
 import ZafBuildings from "../components/Layers/ZafBuildings";
 import MinesAoi from "../components/Layers/MinesAoi";
+import VectorLegend from "../components/Legends/VectorLegend";
 import ZafAdm0 from "../components/Layers/ZafAdm0";
 
 const BASEMAPS = {
@@ -95,7 +97,7 @@ const BASEMAPS = {
   },
 };
 
-export default function MapDashboard() {
+export default function MapDashboard({ analysisLayer = null, analysisMine = null, analysisLegend = null, hotspotData = null, analysisMines = null, changeTile = null }) {
   const mapRef = useRef(null);
   const { layers: layerVisibility } = useLayerStore();
   const [viewState, setViewState] = useState({
@@ -111,10 +113,11 @@ export default function MapDashboard() {
   const [featureIndex, setFeatureIndex] = useState(0);
   const BUILDING_ZOOM_THRESHOLD = 13;
   const { getVisibleLayers, extentRequest, clearExtentRequest, getLayer } = useEarthEngineStore();
-  const visibleLayers = getVisibleLayers();
+  const analysisMode = analysisMines !== null;
+  const visibleLayers = analysisMode ? [] : getVisibleLayers();
 
   useEffect(() => {
-    if (!mapLoaded || !extentRequest) return;
+    if (!mapLoaded || !extentRequest || analysisMode) return;
     const bounds = extentRequest.bounds;
     if (getLayer(extentRequest.layerId) && Array.isArray(bounds) && bounds.length === 4 &&
         bounds.every(Number.isFinite) && bounds[0] < bounds[2] && bounds[1] < bounds[3]) {
@@ -122,6 +125,22 @@ export default function MapDashboard() {
     }
     clearExtentRequest();
   }, [mapLoaded, extentRequest, clearExtentRequest, getLayer]);
+
+  useEffect(() => {
+    if (!mapLoaded || !analysisMine?.geometry) return;
+    const coordinates = analysisMine.geometry.coordinates.flat(Infinity);
+    const xs = [], ys = [];
+    for (let i = 0; i < coordinates.length; i += 2) { xs.push(coordinates[i]); ys.push(coordinates[i + 1]); }
+    if (xs.length) mapRef.current?.fitBounds([[Math.min(...xs), Math.min(...ys)], [Math.max(...xs), Math.max(...ys)]], { padding: 35, maxZoom: 14, duration: 500 });
+  }, [mapLoaded, analysisMine]);
+
+  useEffect(() => {
+    if (!mapLoaded || !analysisMines?.length || analysisMine) return;
+    const coordinates = analysisMines.flatMap((mine) => mine.geometry.coordinates.flat(Infinity));
+    const xs = [], ys = [];
+    for (let i = 0; i < coordinates.length; i += 2) { xs.push(coordinates[i]); ys.push(coordinates[i + 1]); }
+    if (xs.length) mapRef.current?.fitBounds([[Math.min(...xs), Math.min(...ys)], [Math.max(...xs), Math.max(...ys)]], {padding: 40, duration: 500});
+  }, [mapLoaded, analysisMines, analysisMine]);
 
   // const handleParcelLayerToggle = useCallback((layerKey) => {
   //   selectedBaseLayer((prev) => {
@@ -170,7 +189,7 @@ export default function MapDashboard() {
         maxZoom={17.9} // prevents zooming in past level 19
         onClick={handleMapClick}
       >
-        {mapLoaded && (
+        {mapLoaded && !analysisMode && (
           <>
             {/* {layerVisibility.zaf_adm1 && (
               <>
@@ -202,12 +221,12 @@ export default function MapDashboard() {
           </>
         )}
 
-        {layerVisibility.zaf_osm_buildings &&
+        {!analysisMode && layerVisibility.zaf_osm_buildings &&
           viewState.zoom >= BUILDING_ZOOM_THRESHOLD && (
           <ZafBuildings TILE_SERVER={TILE_SERVER} />
           )}
         {/* 💬 Message overlay */}
-        {layerVisibility.zaf_osm_buildings &&
+        {!analysisMode && layerVisibility.zaf_osm_buildings &&
           viewState.zoom < BUILDING_ZOOM_THRESHOLD && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-white/90 text-gray-800 px-4 py-2 rounded-lg shadow-md text-sm font-medium">
               Zoom in to view buildings
@@ -256,7 +275,7 @@ export default function MapDashboard() {
                     .map(([key, val]) => (
                       <tr key={key}>
                         <td className="font-medium pr-2 align-top">{key}</td>
-                        <td className="break-all">{String(val)}</td>
+                        <td className="break-all">{formatValue(val)}</td>
                       </tr>
                     ))}
                 </tbody>
@@ -289,14 +308,26 @@ export default function MapDashboard() {
             />
           </Source>
         ))}
-        {mapLoaded && layerVisibility.zaf_adm0 && <ZafAdm0 TILE_SERVER={TILE_SERVER} />}
-        {mapLoaded && layerVisibility.mines_aoi && <MinesAoi TILE_SERVER={TILE_SERVER} />}
+        {!analysisMode && mapLoaded && layerVisibility.zaf_adm0 && <ZafAdm0 TILE_SERVER={TILE_SERVER} />}
+        {!analysisMode && mapLoaded && layerVisibility.mines_aoi && <MinesAoi TILE_SERVER={TILE_SERVER} />}
+        {analysisMode && changeTile && <Source key={changeTile} id="change-raster" type="raster" tiles={[changeTile]} tileSize={256}><Layer id="change-raster-layer" type="raster" /></Source>}
+        {analysisMode && hotspotData && <Source id="hotspot-grid" type="geojson" data={hotspotData}>
+          <Layer id="hotspot-fill" type="fill" paint={{"fill-color": ["match", ["get", "category"], "hotspot_99", "#99000d", "hotspot_95", "#ef3b2c", "hotspot_90", "#fcae91", "not_significant", "#d9d9d9", "coldspot_90", "#bdd7e7", "coldspot_95", "#3182bd", "coldspot_99", "#08519c", "#737373"], "fill-opacity": 0.8, "fill-outline-color": "#888888"}} />
+        </Source>}
         <NavigationControl position="top-right" />
       </Map>
 
+      {visibleLayers.some((layer) => layer.type === "classification") && <div className="absolute bottom-8 left-4 z-10 space-y-2 max-h-[60%] overflow-auto">
+        {visibleLayers.filter((layer) => layer.type === "classification").map((layer, index) => (
+          <VectorLegend key={layer.id || index} title={`Classification (${layer.classifier?.modelYear ?? "unknown"})`}
+            positionClassName="relative" items={(layer.classes || []).map((entry) => ({ label: entry.name, color: entry.color }))} />
+        ))}
+      </div>}
+      {analysisLegend?.length > 0 && <VectorLegend title="Analysis legend" items={analysisLegend.map((item) => ({ label: item.label, color: item.color }))} />}
       {/* Basemap Switch Panel */}
-      <div className="absolute top-4 left-4 z-10">
+      <div className="absolute top-32 right-2 z-10">
         <button
+          aria-label="Change basemap"
           onClick={() => setShowBasemapPanel(!showBasemapPanel)}
           className="bg-white rounded-lg shadow-lg p-3 hover:bg-gray-50 transition-colors text-gray-700 font-semibold"
         >
@@ -304,7 +335,7 @@ export default function MapDashboard() {
         </button>
 
         {showBasemapPanel && (
-          <div className="absolute top-14 left-0 bg-white rounded-lg shadow-lg p-3 min-w-[150px]">
+          <div className="absolute top-14 right-0 bg-white rounded-lg shadow-lg p-3 min-w-[150px]">
             <h3 className="text-sm font-semibold mb-2 text-gray-700">
               Basemaps
             </h3>

@@ -8,6 +8,9 @@ import Staff from "./pages/Staff";
 import Patents from "./pages/Patents";
 import LayoutWithSidebar from "./layouts/LayouWithSidebar";
 import MapDashboard from "./pages/MapDashboard";
+import Analysis from "./pages/Analysis";
+import SupervisedClassification from "./pages/SupervisedClassification";
+import ChangeDetection from "./pages/ChangeDetection";
 import EarthEngineConnect from "./pages/EarthEngineConnect";
 
 function App() {
@@ -19,6 +22,9 @@ function App() {
         {/* Uncomment and organize routes under layout if needed */}
         <Route element={<LayoutWithSidebar />}>
           <Route path="/" element={<MapDashboard />} />
+          <Route path="/supervised-classification" element={<SupervisedClassification />} />
+          <Route path="/analysis" element={<Analysis />} />
+          <Route path="/change-detection" element={<ChangeDetection />} />
           <Route path="/publications" element={<Dashboard />} />
           <Route path="/staff" element={<Staff />} />
           <Route path="/patents" element={<Patents />} />

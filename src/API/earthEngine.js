@@ -6,6 +6,7 @@ export function validateClassificationDate(date) {
   const parsed = new Date(`${date}T00:00:00Z`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(parsed.getTime()) ||
       parsed.toISOString().slice(0, 10) !== date) return "Enter a valid requested date.";
+  if (date < "2000-01-01" || date > "2023-12-31") return "Choose a date between 1 January 2000 and 31 December 2023.";
   return null;
 }
 

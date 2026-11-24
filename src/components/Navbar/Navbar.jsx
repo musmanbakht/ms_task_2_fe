@@ -1,90 +1,29 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { FaSignOutAlt, FaTimes } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
+import { useEarthEngineAuthStore } from "../../store/earthEngineAuthStore";
 
-const Navbar = () => {
-  return (
-    <>
-      {/* <nav className="border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"> */}
-      <nav className="border-gray-200 dark:border-gray-700">
-        {/* <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto px-8 py-2"> */}
-        <div className="max-w-screen-xl flex flex-wrap items-center justify-between px-8 py-2">
-          <a
-            href="#"
-            className="flex items-center space-x-2 rtl:space-x-reverse"
-          >
-            {/* <img src="https://flowbite.com/docs/images/logo.svg" className="h-8" alt="Flowbite Logo" /> */}
-            <img src="/digimine_logo.jpg" className="h-12" alt="WITS Logo" />
-            <span className="ml-8 self-center text-2xl font-semibold whitespace-nowrap dark:text-gray-800">
-              SDSS Portal
-            </span>
-          </a>
-          <button
-            data-collapse-toggle="navbar-solid-bg"
-            type="button"
-            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-            aria-controls="navbar-solid-bg"
-            aria-expanded="false"
-          >
-            <span className="sr-only">Open main menu</span>
-            <svg
-              className="w-5 h-5"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 17 14"
-            >
-              <path
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M1 1h15M1 7h15M1 13h15"
-              />
-            </svg>
-          </button>
-          {/* <div
-            className="hidden w-full md:block md:w-auto"
-            id="navbar-solid-bg"
-          >
-            <ul className="flex flex-col font-medium mt-4 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-transparent dark:bg-gray-800 md:dark:bg-transparent dark:border-gray-700">
-              <li>
-                <a
-                  href="#"
-                  className="block py-2 px-3 md:p-0 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:dark:text-blue-500 dark:bg-blue-600 md:dark:bg-transparent"
-                  aria-current="page"
-                >
-                  Home
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block py-2 px-3 md:p-0 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                >
-                  Services
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block py-2 px-3 md:p-0 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                >
-                  Pricing
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block py-2 px-3 md:p-0 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                >
-                  Contact
-                </a>
-              </li>
-            </ul>
-          </div> */}
-        </div>
-      </nav>
-    </>
-  );
-};
+export default function Navbar() {
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, loading, error, initialize, connect, disconnect } = useEarthEngineAuthStore();
+  const [showPrompt, setShowPrompt] = useState(false);
+  useEffect(() => { let active = true; initialize().then(() => { if (!active) return; if (window.location.pathname !== pathname) navigate(window.location.pathname + window.location.search, { replace: true }); if (!useEarthEngineAuthStore.getState().isAuthenticated) setShowPrompt(true); }); return () => { active = false; }; }, [initialize]);
+  useEffect(() => { if (isAuthenticated) setShowPrompt(false); }, [isAuthenticated]);
+  const title = ({ "/": "Classification", "/supervised-classification": "Supervised classification", "/analysis": "Hotspot analysis", "/change-detection": "Change Detection", "/publications": "Publications", "/staff": "Staff", "/patents": "Patents", "/earth-engine-auth": "Earth Engine" })[pathname] || "SDSS Portal";
+  return <header className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-white px-4 sm:px-8 py-2">
+    <div className="flex items-center gap-4"><img src="/digimine_logo.jpg" className="h-12" alt="WITS Logo" /><h1 className="text-xl sm:text-2xl font-semibold text-gray-800">{title}</h1></div>
+    <div className="flex items-center gap-2">
+      <span className={`h-2.5 w-2.5 rounded-full ${isAuthenticated ? "bg-green-500" : "bg-red-500"}`} aria-label={isAuthenticated ? "Earth Engine connected" : "Earth Engine disconnected"} />
+      {isAuthenticated ? <button type="button" onClick={() => disconnect()} aria-label="Disconnect Google Earth Engine" className="group flex items-center gap-0 hover:gap-2 focus-visible:gap-2 rounded-lg border border-red-200 bg-red-50 p-2 text-red-700 transition-all hover:bg-red-100 focus-visible:bg-red-100"><FaSignOutAlt className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 group-hover:max-w-64 group-hover:opacity-100 group-focus-visible:max-w-64 group-focus-visible:opacity-100">Disconnect Google Earth Engine</span></button> : <ConnectButton connect={connect} loading={loading} />}
 
-export default Navbar;
+    </div>
+    {showPrompt && !isAuthenticated && <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowPrompt(false)}><div role="dialog" aria-modal="true" aria-labelledby="connect-prompt" onClick={e => e.stopPropagation()} className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-xl"><button type="button" aria-label="Close" className="absolute right-4 top-4 text-gray-500 hover:text-gray-800" onClick={() => setShowPrompt(false)}><FaTimes /></button><p id="connect-prompt" className="mb-5 pr-6 text-lg text-gray-800">To View supervised classification and stats, connect to google earth engine</p><div className="flex justify-center"><ConnectButton connect={connect} loading={loading} /></div></div></div>}
+    {error && <p role="alert" className="w-full text-right text-sm text-red-700">{error}</p>}
+  </header>;
+}
+
+function ConnectButton({ connect, loading }) {
+  return <button type="button" onClick={connect} disabled={loading} className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 hover:shadow disabled:opacity-50"><FcGoogle className="h-6 w-6" aria-hidden="true" /><span>{loading ? "Connecting…" : "Connect Google Earth Engine"}</span></button>;
+}

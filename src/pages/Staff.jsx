@@ -1,3 +1,4 @@
+import LoadingSkeleton from "../components/Common/LoadingSkeleton";
 import { useEffect, useState } from "react";
 // import {
 //   MagnifyingGlassIcon,
@@ -123,9 +124,7 @@ export default function StaffManagement() {
                 {/* Table */}
                 <div className="overflow-x-auto">
                   {loading ? (
-                    <div className="flex justify-center items-center py-20">
-                      Loading...
-                    </div>
+                    <LoadingSkeleton text="Loading staff…" className="h-48" />
                   ) : staff.length > 0 ? (
                     <table className="w-full border-collapse">
                       <thead>

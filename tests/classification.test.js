@@ -21,11 +21,11 @@ test("simple imagery keeps its existing endpoint and payload", async () => {
   assert.equal(useEarthEngineStore.getState().getLayer(result.layerId).product, "modis");
 });
 
-test("real dates pass validation without year restrictions", () => {
-  for (const date of ["", "2023-02-29", "2015-13-01", "invalid"]) {
+test("classification dates respect the supported range", () => {
+  for (const date of ["", "2023-02-29", "2015-13-01", "invalid", "1999-12-31", "2024-01-01"]) {
     assert.ok(validateClassificationDate(date));
   }
-  for (const date of ["2010-07-15", "2015-07-15", "2020-02-29", "2023-07-15", "2026-10-27"]) assert.equal(validateClassificationDate(date), null);
+  for (const date of ["2010-07-15", "2015-07-15", "2020-02-29", "2023-07-15", "2000-01-01", "2023-12-31"]) assert.equal(validateClassificationDate(date), null);
 });
 
 test("classification preserves response metadata and shares layer controls with imagery", async () => {

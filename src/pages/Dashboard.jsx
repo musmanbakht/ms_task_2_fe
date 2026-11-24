@@ -1,3 +1,4 @@
+import LoadingSkeleton from "../components/Common/LoadingSkeleton";
 import React, { useEffect, useMemo, useState } from "react";
 import Sidebar from "../components/Sidebar/Sidebar";
 // import HeaderStats from "../components/Headers/HeaderStats";
@@ -42,6 +43,7 @@ const Dashboard = () => {
     <>
       <div>
         <div className="p-4">
+          {loading && <LoadingSkeleton text="Loading publications and charts…" className="h-48 mb-4" />} 
           <DashboardMap
             schools={dashboardData ? dashboardData.allSchoolsYearly : []}
             onSchoolSelect={(name) => setHighlightSchool(name)}
